@@ -12,7 +12,7 @@ RconPacket packet = rcon.command("list");
 // Display the result in the console
 System.out.println(packet.getPayloadAs("UTF8"));
 ```
-When connecting to the rcon server, an `AuthenticationException` wil be thrown if the password is incorrect.
+When connecting to the rcon server, an `AuthenticationException` will be thrown if the password is incorrect.
 
 ## Download
 The latest packed .jar is available on the releases page.
