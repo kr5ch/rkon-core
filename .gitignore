@@ -1,0 +1,9 @@
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Stuff
+bin/
+build/
+lib/
