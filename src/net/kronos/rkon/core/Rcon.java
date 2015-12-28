@@ -2,25 +2,21 @@ package net.kronos.rkon.core;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.util.Random;
 
 import net.kronos.rkon.core.ex.AuthenticationException;
 
 public class Rcon {
 	
-	private Socket socket;
-	private int requestId;
-	
 	private final Object sync = new Object();
-
-	/**
-	 * Create an unconnected Rcon object
-	 */
-	public Rcon() {
-		this.socket = new Socket();
-		this.requestId = new Random().nextInt();
-	}
+	private final Random rand = new Random();
 	
+	private int requestId;
+	private Socket socket;
+	
+	private Charset charset;
+
 	/**
 	 * Create, connect and authenticate a new Rcon object
 	 * 
@@ -32,7 +28,10 @@ public class Rcon {
 	 * @throws AuthenticationException
 	 */
 	public Rcon(String host, int port, byte[] password) throws IOException, AuthenticationException {
-		this();
+		// Default charset is utf8
+		charset = Charset.forName("UTF-8");
+		
+		// Connect to host
 		this.connect(host, port, password);
 	}
 	
@@ -57,6 +56,9 @@ public class Rcon {
 		
 		// Connect to the rcon server
 		synchronized(sync) {
+			// New random request id
+			this.requestId = rand.nextInt();
+			
 			// We can't reuse a socket, so we need a new one
 			this.socket = new Socket(host, port);
 		}
@@ -85,16 +87,18 @@ public class Rcon {
 	 * Send a command to the server
 	 * 
 	 * @param payload The command to send
-	 * @return A RconPacket containing the response payload (use {@link RconPacket#getPayload()})
+	 * @return The payload of the response
 	 * 
 	 * @throws IOException
 	 */
-	public RconPacket command(String payload) throws IOException {
+	public String command(String payload) throws IOException {
 		if(payload == null || payload.trim().isEmpty()) {
 			throw new IllegalArgumentException("Payload can't be null or empty");
 		}
 		
-		return this.send(RconPacket.SERVERDATA_EXECCOMMAND, payload.getBytes());
+		RconPacket response = this.send(RconPacket.SERVERDATA_EXECCOMMAND, payload.getBytes());
+		
+		return new String(response.getPayload(), this.getCharset());
 	}
 	
 	private RconPacket send(int type, byte[] payload) throws IOException {
@@ -102,13 +106,21 @@ public class Rcon {
 			return RconPacket.send(this, type, payload);
 		}
 	}
+
+	public int getRequestId() {
+		return requestId;
+	}
 	
 	public Socket getSocket() {
 		return socket;
 	}
 	
-	public int getRequestId() {
-		return requestId;
+	public Charset getCharset() {
+		return charset;
+	}
+	
+	public void setCharset(Charset charset) {
+		this.charset = charset;
 	}
 
 }

@@ -7,7 +7,6 @@ import java.net.SocketException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 
 import net.kronos.rkon.core.ex.MalformedPacketException;
 
@@ -38,17 +37,6 @@ public class RconPacket {
 	
 	public byte[] getPayload() {
 		return payload;
-	}
-	
-	/**
-	 * Get the payload with a specific charset
-	 * 
-	 * @param cs The charset ot use
-	 * 
-	 * @return The payload encoded with the charset 
-	 */
-	public String getPayloadAs(String cs) {
-		return new String(getPayload(), Charset.forName(cs));
 	}
 	
 	/**

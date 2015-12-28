@@ -7,10 +7,10 @@ This is a library for the [Source RCON Protocol](https://developer.valvesoftware
 Rcon rcon = new Rcon("127.0.0.1", 27015, "mypassword".getBytes());
 
 // Example: On a minecraft server this will list the connected players
-RconPacket packet = rcon.command("list");
+String result = rcon.command("list");
 
 // Display the result in the console
-System.out.println(packet.getPayloadAs("UTF8"));
+System.out.println(result);
 ```
 When connecting to the rcon server, an `AuthenticationException` will be thrown if the password is incorrect.
 
