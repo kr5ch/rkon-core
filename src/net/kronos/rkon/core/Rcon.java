@@ -50,7 +50,7 @@ public class Rcon {
 			throw new IllegalArgumentException("Host can't be null or empty");
 		}
 		
-		if(port < 0 || port > 65535) {
+		if(port < 1 || port > 65535) {
 			throw new IllegalArgumentException("Port is out of range");
 		}
 		
