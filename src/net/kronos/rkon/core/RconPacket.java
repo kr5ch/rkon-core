@@ -1,5 +1,7 @@
 package net.kronos.rkon.core;
 
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,8 +16,6 @@ public class RconPacket {
 	
 	public static final int SERVERDATA_EXECCOMMAND = 2;
 	public static final int SERVERDATA_AUTH = 3;
-	
-	private static final int READ_BUFFER_SIZE = 4096;
 	
 	private int requestId;
 	private int type;
@@ -103,36 +103,38 @@ public class RconPacket {
 	 * @return The read RconPacket
 	 * 
 	 * @throws IOException
-	 * @throws MalformedPacketException 
+	 * @throws MalformedPacketException
 	 */
 	private static RconPacket read(InputStream in) throws IOException {
-		byte[] receiveBuffer = new byte[READ_BUFFER_SIZE];
+		// Header is 3 4-bytes ints
+		byte[] header = new byte[4 * 3];
 		
-		// Read x bytes on input
-		int bytesRead = in.read(receiveBuffer);
+		// Read the 3 ints
+		in.read(header);
 		
 		try {
-			ByteBuffer buffer = ByteBuffer.wrap(receiveBuffer, 0, bytesRead);
+			// Use a bytebuffer in little endian to read the first 3 ints
+			ByteBuffer buffer = ByteBuffer.wrap(header);
 			buffer.order(ByteOrder.LITTLE_ENDIAN);
 			
 			int length = buffer.getInt();
 			int requestId = buffer.getInt();
 			int type = buffer.getInt();
 			
-			// Get only payload length, not packet body length
+			// Payload size can be computed now that we have its length
 			byte[] payload = new byte[length - 4 - 4 - 2];
 			
-			buffer.get(payload);
+			DataInputStream dis = new DataInputStream(in);
+			
+			// Read the full payload
+			dis.readFully(payload);
 			
 			// Read the null bytes
-			buffer.get(new byte[2]);
+			dis.read(new byte[2]);
 			
 			return new RconPacket(requestId, type, payload);
 		}
-		catch(IndexOutOfBoundsException e) {
-			throw new MalformedPacketException("Invalid packet length");
-		}
-		catch(BufferUnderflowException e) {
+		catch(BufferUnderflowException | EOFException e) {
 			throw new MalformedPacketException("Cannot read the whole packet");
 		}
 	}
