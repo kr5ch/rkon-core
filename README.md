@@ -15,4 +15,4 @@ System.out.println(result);
 When connecting to the rcon server, an `AuthenticationException` will be thrown if the password is incorrect.
 
 ## Download
-The latest packed .jar is available on the releases page.
+The latest packed .jar, ready to use as a library, is available [here](https://github.com/Kronos666/rkon-core/releases/latest).
