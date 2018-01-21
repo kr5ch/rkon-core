@@ -122,7 +122,7 @@ public class RconPacket {
 			int type = buffer.getInt();
 			
 			// Payload size can be computed now that we have its length
-			byte[] payload = new byte[length - 4 - 4 - 2];
+			byte[] payload = new byte[length - 4 - 4 - 4 - 2];
 			
 			DataInputStream dis = new DataInputStream(in);
 			
