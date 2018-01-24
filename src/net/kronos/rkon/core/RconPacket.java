@@ -12,6 +12,7 @@ import java.nio.ByteOrder;
 
 import net.kronos.rkon.core.ex.MalformedPacketException;
 
+@SuppressWarnings({"SpellCheckingInspection", "JavaDoc", "unused", "WeakerAccess", "ResultOfMethodCallIgnored"})
 public class RconPacket {
 	
 	public static final int SERVERDATA_EXECCOMMAND = 2;
@@ -41,14 +42,14 @@ public class RconPacket {
 	
 	/**
 	 * Send a Rcon packet and fetch the response
-	 * 
+	 *
 	 * @param rcon Rcon instance
 	 * @param type The packet type
 	 * @param payload The payload (password, command, etc.)
 	 * @return A RconPacket object containing the response
-	 * 
+	 *
 	 * @throws IOException
-	 * @throws MalformedPacketException 
+	 * @throws MalformedPacketException
 	 */
 	protected static RconPacket send(Rcon rcon, int type, byte[] payload) throws IOException {
 		try {
@@ -66,13 +67,41 @@ public class RconPacket {
 	}
 	
 	/**
+	 * Send an Rcon authentication packet and fetch the response
+	 *
+	 * @param rcon Rcon instance
+	 * @param password Password to be authenticated
+	 * @return An RconPacket object containing the authentication response
+	 *
+	 * @throws IOException
+	 */
+	protected static RconPacket sendAuth(Rcon rcon, byte[] password) throws IOException {
+		try {
+			RconPacket.write(rcon.getSocket().getOutputStream(), rcon.getRequestId(), RconPacket.SERVERDATA_AUTH, password);
+		}
+		catch(SocketException se) {
+			// Close the socket if something happens
+			rcon.getSocket().close();
+			
+			// Rethrow the exception
+			throw se;
+		}
+		
+		// Ignore the SERVERDATA_RESPONSE_VALUE packet as it is empty
+		RconPacket.read(rcon.getSocket().getInputStream());
+		
+		// Return the SERVERDATA_AUTH_RESPONSE packet
+		return RconPacket.read(rcon.getSocket().getInputStream());
+	}
+	
+	/**
 	 * Write a rcon packet on an outputstream
-	 * 
+	 *
 	 * @param out The OutputStream to write on
 	 * @param requestId The request id
 	 * @param type The packet type
 	 * @param payload The payload
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	private static void write(OutputStream out, int requestId, int type, byte[] payload) throws IOException {
@@ -98,10 +127,10 @@ public class RconPacket {
 	
 	/**
 	 * Read an incoming rcon packet
-	 * 
+	 *
 	 * @param in The InputStream to read on
 	 * @return The read RconPacket
-	 * 
+	 *
 	 * @throws IOException
 	 * @throws MalformedPacketException
 	 */

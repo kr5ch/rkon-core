@@ -7,6 +7,7 @@ import java.util.Random;
 
 import net.kronos.rkon.core.ex.AuthenticationException;
 
+@SuppressWarnings({"JavaDoc", "WeakerAccess"})
 public class Rcon {
 	
 	private final Object sync = new Object();
@@ -19,13 +20,13 @@ public class Rcon {
 
 	/**
 	 * Create, connect and authenticate a new Rcon object
-	 * 
+	 *
 	 * @param host Rcon server address
 	 * @param port Rcon server port
 	 * @param password Rcon server password
-	 * 
+	 *
 	 * @throws IOException
-	 * @throws AuthenticationException
+	 * @throws AuthenticationException Thrown if server rejects password
 	 */
 	public Rcon(String host, int port, byte[] password) throws IOException, AuthenticationException {
 		// Default charset is utf8
@@ -37,13 +38,13 @@ public class Rcon {
 	
 	/**
 	 * Connect to a rcon server
-	 * 
+	 *
 	 * @param host Rcon server address
 	 * @param port Rcon server port
 	 * @param password Rcon server password
-	 * 
+	 *
 	 * @throws IOException
-	 * @throws AuthenticationException
+	 * @throws AuthenticationException Thrown if server rejects password
 	 */
 	public void connect(String host, int port, byte[] password) throws IOException, AuthenticationException {
 		if(host == null || host.trim().isEmpty()) {
@@ -64,17 +65,28 @@ public class Rcon {
 		}
 		
 		// Send the auth packet
-		RconPacket res = this.send(RconPacket.SERVERDATA_AUTH, password);
+		// Anonymous sendAuth(Rcon rcon, byte[] password) for one-time use
+		RconPacket response;
+		synchronized (sync) {
+			response = RconPacket.sendAuth(this, password);
+		}
 		
-		// Auth failed
-		if(res.getRequestId() == -1) {
-			throw new AuthenticationException("Password rejected by server");
+		
+		// Check auth status
+		if (response.getRequestId() != this.requestId) {
+			if (response.getRequestId() == -1) {
+				// Auth failed
+				throw new AuthenticationException("Password rejected by server");
+			} else {
+				// Something weird happened
+				throw new AuthenticationException("Auth response ID does not match the original ID");
+			}
 		}
 	}
 	
 	/**
 	 * Disconnect from the current server
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void disconnect() throws IOException {
@@ -85,10 +97,10 @@ public class Rcon {
 	
 	/**
 	 * Send a command to the server
-	 * 
+	 *
 	 * @param payload The command to send
 	 * @return The payload of the response
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public String command(String payload) throws IOException {
@@ -122,5 +134,4 @@ public class Rcon {
 	public void setCharset(Charset charset) {
 		this.charset = charset;
 	}
-
 }
