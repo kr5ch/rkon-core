@@ -27,7 +27,7 @@ public class Rcon {
 	 * @throws IOException
 	 * @throws AuthenticationException
 	 */
-	public Rcon(String host, int port, byte[] password) throws IOException, AuthenticationException {
+	public Rcon(String host, int port, byte[] password) throws IOException, AuthenticationException, IllegalArgumentException {
 		// Default charset is utf8
 		this.charset = Charset.forName("UTF-8");
 		
@@ -45,7 +45,7 @@ public class Rcon {
 	 * @throws IOException
 	 * @throws AuthenticationException
 	 */
-	public void connect(String host, int port, byte[] password) throws IOException, AuthenticationException {
+	public void connect(String host, int port, byte[] password) throws IOException, AuthenticationException, IllegalArgumentException {
 		if(host == null || host.trim().isEmpty()) {
 			throw new IllegalArgumentException("Host can't be null or empty");
 		}
